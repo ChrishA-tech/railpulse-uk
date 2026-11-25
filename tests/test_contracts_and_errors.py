@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import duckdb
+import httpx
 import pandas as pd
 import torch
 from fastapi.testclient import TestClient
@@ -12,6 +13,7 @@ from fastapi.testclient import TestClient
 from src.agents.delay_repay_copilot import (
     DelayRepayCopilot,
     calculate_statutory_delay_repay,
+    load_nrcot_regulatory_corpus,
 )
 from src.analytics.network_cascade import (
     build_uk_rail_graph,
@@ -22,7 +24,13 @@ from src.analytics.network_cascade import (
 )
 from src.app.main import app
 from src.evaluation.error_analysis import generate_error_analysis_report
+from src.ingestion.live_rail_connectors import (
+    OPEN_METEO_URL,
+    TFL_STATUS_URL,
+    fetch_live_uk_rail_corridor_telemetry,
+)
 from src.ingestion.rail_telemetry import (
+    UK_STATION_CODES,
     ingest_darwin_trust_telemetry,
     pnr_hmac_pseudonymise,
 )
@@ -32,7 +40,7 @@ from src.models.cascade_and_gnn import (
     train_conformal_cascade_models,
     train_rail_cascade_gat,
 )
-from src.run_pipeline import generate_synthetic_uk_rail_telemetry
+from src.run_pipeline import generate_synthetic_uk_rail_telemetry, run_end_to_end_pipeline
 
 
 def test_temporal_order_quarantine_and_pnr_hashing(tmp_path: Path) -> None:
@@ -239,3 +247,156 @@ def test_fastapi_endpoints_and_degraded_feed_fallback() -> None:
     audit_body = audit_resp.json()
     assert audit_body["compensation_pct"] == 25.0
     assert audit_body["estimated_refund_gbp"] == 6.0
+
+
+def _build_minimal_pdf_bytes(text: str) -> bytes:
+    """Construct a valid single-page PDF 1.4 byte payload containing ASCII text."""
+    escaped = text.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
+    stream_data = f"BT /F1 12 Tf 72 720 Td ({escaped}) Tj ET".encode("latin-1")
+    objects = [
+        b"1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj\n",
+        b"2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj\n",
+        (
+            b"3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] "
+            b"/Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >> endobj\n"
+        ),
+        (
+            f"4 0 obj << /Length {len(stream_data)} >> stream\n".encode("latin-1")
+            + stream_data
+            + b"\nendstream endobj\n"
+        ),
+        b"5 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj\n",
+    ]
+    out = bytearray(b"%PDF-1.4\n")
+    offsets = [0]
+    for obj in objects:
+        offsets.append(len(out))
+        out.extend(obj)
+    xref_pos = len(out)
+    out.extend(f"xref\n0 {len(offsets)}\n0000000000 65535 f \n".encode("latin-1"))
+    for off in offsets[1:]:
+        out.extend(f"{off:010d} 00000 n \n".encode("latin-1"))
+    out.extend(
+        f"trailer << /Size {len(offsets)} /Root 1 0 R >>\nstartxref\n{xref_pos}\n%%EOF\n".encode(
+            "latin-1"
+        )
+    )
+    return bytes(out)
+
+
+def test_live_uk_rail_connectors_and_degraded_fallback(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """Verify mocked Open-Meteo + TfL live ingestion, quarantine, and LIVE_RAIL_FEED_DEGRADED fallback."""
+    n_stations = len(UK_STATION_CODES)
+
+    def _ok_handler(request: httpx.Request) -> httpx.Response:
+        if str(request.url).startswith(OPEN_METEO_URL):
+            payload = [
+                {
+                    "current": {
+                        "temperature_2m": -1.2 if idx == 0 else 7.5,
+                        "precipitation": 0.2,
+                        "wind_speed_10m": 45.0 if idx == 1 else 12.0,
+                        "wind_gusts_10m": 82.0 if idx == 1 else 20.0,
+                    }
+                }
+                for idx in range(n_stations)
+            ]
+            return httpx.Response(200, json=payload)
+        if str(request.url) == TFL_STATUS_URL:
+            return httpx.Response(
+                200,
+                json=[
+                    {
+                        "id": "elizabeth",
+                        "name": "Elizabeth line",
+                        "lineStatuses": [
+                            {"statusSeverity": 9, "statusSeverityDescription": "Minor Delays"}
+                        ],
+                    }
+                ],
+            )
+        return httpx.Response(404)
+
+    live_q_path = tmp_path / "live_quarantine.parquet"
+    with httpx.Client(transport=httpx.MockTransport(_ok_handler)) as mock_client:
+        live_df = fetch_live_uk_rail_corridor_telemetry(
+            n_rows=140,
+            corrupt_fraction=0.05,
+            quarantine_path=live_q_path,
+            client=mock_client,
+        )
+
+    assert live_df.attrs["feed_status"] == "LIVE"
+    assert live_q_path.exists()
+    assert live_df.attrs["quarantine_count"] >= 3
+    weather_obs = live_df.attrs["weather_observations"]
+    sorted_crs = sorted(UK_STATION_CODES.keys())
+    assert weather_obs[sorted_crs[0]]["weather_regime"] == "Frost/Ice"
+    assert weather_obs[sorted_crs[1]]["weather_regime"] == "Named Winter Storm"
+    assert "booking_pnr" not in live_df.columns
+    assert (live_df["actual_arrival"] >= live_df["actual_departure_prev"]).all()
+
+    # Now test network outage -> LIVE_RAIL_FEED_DEGRADED deterministic fallback
+    def _fail_handler(request: httpx.Request) -> httpx.Response:
+        raise httpx.ConnectError("Simulated network outage", request=request)
+
+    degraded_q_path = tmp_path / "degraded_quarantine.parquet"
+    with httpx.Client(transport=httpx.MockTransport(_fail_handler)) as failing_client:
+        degraded_df = fetch_live_uk_rail_corridor_telemetry(
+            n_rows=100,
+            corrupt_fraction=0.04,
+            quarantine_path=degraded_q_path,
+            client=failing_client,
+        )
+
+    assert degraded_df.attrs["feed_status"] == "LIVE_RAIL_FEED_DEGRADED"
+    assert degraded_q_path.exists()
+    assert len(degraded_df) >= 90
+
+    # Verify --live end-to-end pipeline falls back cleanly when live connector degrades
+    def _degraded_stub(*args, **kwargs):
+        return degraded_df
+
+    monkeypatch.setattr(
+        "src.run_pipeline.fetch_live_uk_rail_corridor_telemetry", _degraded_stub
+    )
+    summary = run_end_to_end_pipeline(n_rows=140, base_dir=tmp_path, live=True)
+    assert summary["feed_status"] == "LIVE_RAIL_FEED_DEGRADED"
+    assert Path(str(summary["report_path"])).exists()
+
+
+def test_load_nrcot_regulatory_corpus_pdf_md_txt(tmp_path: Path) -> None:
+    """Verify load_nrcot_regulatory_corpus parses .md, .txt, and .pdf files into BM25+TF-IDF."""
+    # 1. Verify seeded statutory corpus in data/regulatory_docs/
+    seeded = load_nrcot_regulatory_corpus(Path("data/regulatory_docs"))
+    seeded_ids = {d["doc_id"] for d in seeded}
+    assert {"NRCoT-14.2", "TOC-AVANTI-DR15", "TOC-LNER-DR30", "TOC-NORTHERN-DR15"}.issubset(
+        seeded_ids
+    )
+
+    # 2. Verify mixed .md, .txt, and .pdf parsing in tmp_path
+    (tmp_path / "charter.md").write_text(
+        "## [TOC-TEST-DR15] Test Charter\n15 minutes delay pays 25% single fare.\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "notes.txt").write_text(
+        "CrossCountry split ticket guidance requires calling at the split station.",
+        encoding="utf-8",
+    )
+    (tmp_path / "nrcot_extract.pdf").write_bytes(
+        _build_minimal_pdf_bytes("NRCoT Condition 14.2 Split Ticket PDF Verification")
+    )
+
+    parsed = load_nrcot_regulatory_corpus(tmp_path)
+    doc_ids = {d["doc_id"] for d in parsed}
+    assert "TOC-TEST-DR15" in doc_ids
+    assert any("pdf" in d["source"].lower() for d in parsed)
+    assert any("Split Ticket PDF Verification" in d["text"] for d in parsed)
+
+    copilot = DelayRepayCopilot(docs_dir=tmp_path)
+    hits = copilot.retriever.search("Split Ticket PDF Verification", top_k=3)
+    assert len(hits) >= 1
+    assert any("Split Ticket PDF Verification" in h["text"] for h in hits)
+

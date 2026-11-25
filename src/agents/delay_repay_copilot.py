@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Final, TypedDict
 
 import numpy as np
 from langgraph.graph import END, START, StateGraph
+from pypdf import PdfReader
 from rank_bm25 import BM25Okapi
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -216,11 +218,99 @@ def calculate_statutory_delay_repay(
     }
 
 
+def _infer_topic(doc_id: str, text: str) -> str:
+    """Infer regulatory clause topic from doc_id or body text."""
+    combined = f"{doc_id} {text}".lower()
+    if "14.2" in combined or "14.3" in combined or "split" in combined:
+        return "split_ticketing"
+    if "toc-" in combined or "charter" in combined:
+        return "toc_charter"
+    if "disruption" in combined or "32" in combined:
+        return "disruption"
+    if "attribution" in combined or "dag" in combined:
+        return "delay_attribution"
+    return "delay_repay_general"
+
+
+def _parse_structured_sections(raw_text: str, stem: str, ext: str) -> list[dict[str, str]]:
+    """Parse `[DOC-ID]`-headed sections or fallback chunks from regulatory document text."""
+    section_pattern = re.compile(r"^#{1,3}\s*\[([A-Za-z0-9.\-]+)\]\s*(.+)$", re.MULTILINE)
+    matches = list(section_pattern.finditer(raw_text))
+    records: list[dict[str, str]] = []
+
+    if matches:
+        for i, match in enumerate(matches):
+            doc_id = match.group(1).strip()
+            heading = match.group(2).strip()
+            start = match.end()
+            end = matches[i + 1].start() if i + 1 < len(matches) else len(raw_text)
+            body = " ".join(raw_text[start:end].strip().split())
+            if body:
+                records.append(
+                    {
+                        "doc_id": doc_id,
+                        "source": f"{heading} ({stem}{ext})",
+                        "topic": _infer_topic(doc_id, body),
+                        "text": f"{heading}: {body}",
+                    }
+                )
+        return records
+
+    cleaned = " ".join(raw_text.strip().split())
+    if cleaned:
+        doc_id = f"REG-{stem.upper()}"
+        records.append(
+            {
+                "doc_id": doc_id,
+                "source": f"{stem}{ext}",
+                "topic": _infer_topic(doc_id, cleaned),
+                "text": cleaned,
+            }
+        )
+    return records
+
+
+def load_nrcot_regulatory_corpus(
+    docs_dir: Path = Path("data/regulatory_docs"),
+) -> list[dict[str, str]]:
+    """Parse .pdf (pypdf), .md, and .txt NRCoT / TOC Charter documents from disk."""
+    target_dir = Path(docs_dir)
+    if not target_dir.exists() or not target_dir.is_dir():
+        return list(NRCOT_AND_TOC_CORPUS)
+
+    parsed_docs: list[dict[str, str]] = []
+    for file_path in sorted(target_dir.iterdir()):
+        if not file_path.is_file():
+            continue
+        suffix = file_path.suffix.lower()
+        if suffix in (".md", ".txt"):
+            text = file_path.read_text(encoding="utf-8", errors="ignore")
+            parsed_docs.extend(_parse_structured_sections(text, file_path.stem, suffix))
+        elif suffix == ".pdf":
+            reader = PdfReader(str(file_path))
+            for page_num, page in enumerate(reader.pages, start=1):
+                page_text = (page.extract_text() or "").strip()
+                if not page_text:
+                    continue
+                page_docs = _parse_structured_sections(
+                    page_text,
+                    f"{file_path.stem}-P{page_num}",
+                    ".pdf",
+                )
+                parsed_docs.extend(page_docs)
+
+    return parsed_docs if parsed_docs else list(NRCOT_AND_TOC_CORPUS)
+
+
 class HybridRegulationRetriever:
     """Hybrid BM25 + TF-IDF cosine retriever over NRCoT and TOC Passenger Charters."""
 
-    def __init__(self, corpus: list[dict[str, str]] | None = None) -> None:
-        self.corpus = corpus or list(NRCOT_AND_TOC_CORPUS)
+    def __init__(
+        self,
+        corpus: list[dict[str, str]] | None = None,
+        docs_dir: Path = Path("data/regulatory_docs"),
+    ) -> None:
+        self.corpus = corpus if corpus is not None else load_nrcot_regulatory_corpus(docs_dir)
         self._tokenized = [self._tokenize(f"{d['doc_id']} {d['source']} {d['text']}") for d in self.corpus]
         self._bm25 = BM25Okapi(self._tokenized)
         self._tfidf = TfidfVectorizer(ngram_range=(1, 2), stop_words="english")
@@ -293,8 +383,12 @@ class CopilotState(TypedDict, total=False):
 class DelayRepayCopilot:
     """Guardrailed LangGraph copilot auditing NRCoT split-ticket and TOC Delay Repay claims."""
 
-    def __init__(self, retriever: HybridRegulationRetriever | None = None) -> None:
-        self.retriever = retriever or HybridRegulationRetriever()
+    def __init__(
+        self,
+        retriever: HybridRegulationRetriever | None = None,
+        docs_dir: Path = Path("data/regulatory_docs"),
+    ) -> None:
+        self.retriever = retriever or HybridRegulationRetriever(docs_dir=docs_dir)
         self.graph = self._build_graph()
 
     def _guardrail_and_retrieve_node(self, state: CopilotState) -> CopilotState:

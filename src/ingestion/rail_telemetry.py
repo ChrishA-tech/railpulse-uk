@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Final
 
 import duckdb
+import numpy as np
 import pandas as pd
 import pandera.pandas as pa
 from pandera.errors import SchemaErrors
@@ -223,6 +224,161 @@ def _extract_failure_reasons(err: SchemaErrors, df_index: pd.Index) -> dict[obje
     return reasons
 
 
+def write_quarantine_parquet(
+    quarantine_df: pd.DataFrame,
+    quarantine_path: str | Path = "data/quarantine/darwin_quarantine.parquet",
+) -> Path:
+    """Persist quarantined Darwin/TRUST records to Parquet with ISO-safe timestamp columns."""
+    out_path = Path(quarantine_path)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    quarantine_out = quarantine_df.copy()
+    for col in ("scheduled_arrival", "actual_departure_prev", "actual_arrival"):
+        if col in quarantine_out.columns:
+            quarantine_out[col] = quarantine_out[col].astype("string")
+    quarantine_out.to_parquet(out_path, index=False)
+    return out_path
+
+
+def generate_synthetic_uk_rail_telemetry(
+    n_rows: int = 720,
+    corrupt_fraction: float = 0.03,
+    seed: int = 42,
+    weather_overrides: dict[str, dict[str, float | str]] | None = None,
+    status_delay_boost_min: float = 0.0,
+) -> pd.DataFrame:
+    """Generate UK TRUST/Darwin + Met Office corridor telemetry with ~3% corrupt/out-of-order rows."""
+    rng = np.random.default_rng(seed)
+    stations = sorted(UK_STATION_CODES.keys())
+    base_start = pd.Timestamp("2026-01-14 06:00:00")
+
+    weather_choices = ["Normal", "Named Winter Storm", "Heavy Rain", "High Wind", "Frost/Ice"]
+    weather_probs = [0.58, 0.14, 0.12, 0.10, 0.06]
+
+    rows: list[dict[str, object]] = []
+    for i in range(n_rows):
+        crs = stations[i % len(stations)]
+        tiploc = UK_STATION_CODES[crs]
+        corridor = str(UK_STATION_METADATA[crs]["corridor"])
+
+        hour_offset = int(i // len(stations))
+        sched_arr = base_start + pd.Timedelta(hours=hour_offset, minutes=int(rng.integers(0, 50)))
+        run_leg_min = int(rng.integers(22, 65))
+        actual_dep_prev = sched_arr - pd.Timedelta(minutes=run_leg_min)
+
+        hour_of_day = sched_arr.hour
+        is_peak = (7 <= hour_of_day <= 9) or (16 <= hour_of_day <= 19)
+
+        if weather_overrides and crs in weather_overrides and i < len(stations) * 6:
+            weather = str(weather_overrides[crs].get("weather_regime", "Normal"))
+        else:
+            weather = str(rng.choice(weather_choices, p=weather_probs))
+
+        if weather == "Named Winter Storm":
+            delay_code = str(rng.choice(["X8", "YI", "OT"], p=[0.6, 0.25, 0.15]))
+            base_delay = float(rng.gamma(shape=3.2, scale=9.5))
+        else:
+            delay_code = str(
+                rng.choice(
+                    ["ON_TIME", "TG", "YI", "M2", "I1", "I2", "OT"],
+                    p=[0.46, 0.12, 0.16, 0.07, 0.07, 0.08, 0.04],
+                )
+            )
+            if delay_code == "ON_TIME":
+                base_delay = float(max(0.0, rng.normal(1.5, 1.5)))
+            elif delay_code in ("I1", "I2", "OT"):
+                base_delay = float(rng.gamma(shape=2.8, scale=8.5))
+            else:
+                base_delay = float(rng.gamma(shape=2.0, scale=5.0))
+
+        if is_peak:
+            base_delay += float(rng.uniform(2.0, 7.0))
+        if status_delay_boost_min > 0.0 and delay_code != "ON_TIME":
+            base_delay += status_delay_boost_min
+
+        delay_minutes = round(max(0.0, base_delay), 2)
+        actual_arr = sched_arr + pd.Timedelta(minutes=delay_minutes)
+        turnaround_slack = round(float(rng.uniform(3.0, 18.0)), 2)
+
+        unabsorbed = max(0.0, delay_minutes - 0.75 * turnaround_slack)
+        weather_mult = (
+            1.35
+            if weather == "Named Winter Storm"
+            else (1.15 if weather in ("Heavy Rain", "High Wind") else 1.0)
+        )
+        infra_boost = 10.0 if delay_code in ("I1", "I2", "OT") else 0.0
+        peak_boost = 3.5 if is_peak else 0.0
+
+        t30 = max(
+            0.0,
+            round(
+                0.78 * delay_minutes
+                + 0.35 * unabsorbed * weather_mult
+                + 0.3 * infra_boost
+                + rng.normal(0, 2.5),
+                2,
+            ),
+        )
+        t60 = max(
+            0.0,
+            round(
+                0.62 * delay_minutes
+                + 0.52 * unabsorbed * weather_mult
+                + 0.5 * infra_boost
+                + peak_boost
+                + rng.normal(0, 3.2),
+                2,
+            ),
+        )
+        t120 = max(
+            0.0,
+            round(
+                0.40 * delay_minutes
+                + 0.45 * unabsorbed * weather_mult
+                + 0.4 * infra_boost
+                + rng.normal(0, 3.8),
+                2,
+            ),
+        )
+
+        rows.append(
+            {
+                "train_uid": f"1A{10 + (i % 89):02d}",
+                "rid": f"20260114{1000000 + i}",
+                "corridor": corridor,
+                "crs_code": crs,
+                "tiploc": tiploc,
+                "scheduled_arrival": sched_arr,
+                "actual_departure_prev": actual_dep_prev,
+                "actual_arrival": actual_arr,
+                "delay_minutes": delay_minutes,
+                "delay_code": delay_code,
+                "weather_regime": weather,
+                "is_peak_commuter": bool(is_peak),
+                "turnaround_slack_min": turnaround_slack,
+                "booking_pnr": f"UK{100000 + i:06d}",
+                "target_delay_30m": t30,
+                "target_delay_60m": t60,
+                "target_delay_120m": t120,
+            }
+        )
+
+    df = pd.DataFrame(rows)
+    if corrupt_fraction > 0.0:
+        n_corrupt = max(3, int(round(n_rows * corrupt_fraction)))
+        corrupt_indices = rng.choice(df.index.to_numpy(), size=min(n_corrupt, len(df)), replace=False)
+        for k, idx in enumerate(corrupt_indices):
+            mode = k % 3
+            if mode == 0:
+                df.loc[idx, "actual_arrival"] = pd.Timestamp(
+                    df.loc[idx, "actual_departure_prev"]
+                ) - pd.Timedelta(minutes=12)
+            elif mode == 1:
+                df.loc[idx, "delay_code"] = "BAD_CODE"
+            else:
+                df.loc[idx, "crs_code"] = "ZZZ"
+    return df
+
+
 def ingest_darwin_trust_telemetry(
     raw_df: pd.DataFrame,
     duckdb_path: str | Path = "data/processed/railpulse.duckdb",
@@ -234,7 +390,6 @@ def ingest_darwin_trust_telemetry(
     duckdb_path = Path(duckdb_path)
     quarantine_path = Path(quarantine_path)
     duckdb_path.parent.mkdir(parents=True, exist_ok=True)
-    quarantine_path.parent.mkdir(parents=True, exist_ok=True)
 
     prepared_df = _prepare_telemetry_frame(raw_df, secret_key=secret_key)
 
@@ -283,12 +438,8 @@ def ingest_darwin_trust_telemetry(
     if not clean_df.empty:
         clean_df = DarwinTrustSchema.validate(clean_df, lazy=False)
 
-    # Persist quarantine Parquet (convert timestamps to ISO/ns cleanly)
-    quarantine_out = quarantine_df.copy()
-    for col in ("scheduled_arrival", "actual_departure_prev", "actual_arrival"):
-        if col in quarantine_out.columns:
-            quarantine_out[col] = quarantine_out[col].astype("string")
-    quarantine_out.to_parquet(quarantine_path, index=False)
+    # Persist quarantine Parquet via shared writer
+    write_quarantine_parquet(quarantine_df, quarantine_path=quarantine_path)
 
     # Persist clean validated telemetry into DuckDB
     with duckdb.connect(str(duckdb_path)) as con:

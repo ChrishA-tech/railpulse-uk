@@ -30,7 +30,7 @@ jobs:
         run: .venv/bin/ruff check src tests
 
       - name: Run end-to-end pipeline
-        run: .venv/bin/python -m src.run_pipeline
+        run: .venv/bin/python -m src.run_pipeline --live
 
       - name: Run pytest suite
         run: .venv/bin/pytest -v
