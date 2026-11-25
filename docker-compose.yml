@@ -1,0 +1,55 @@
+services:
+  pgvector:
+    image: pgvector/pgvector:pg16
+    container_name: railpulse-pgvector
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-railpulse}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-railpulse_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-railpulse_uk}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgvector_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U railpulse -d railpulse_uk"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.17.2
+    container_name: railpulse-mlflow
+    command: >
+      mlflow server
+      --backend-store-uri sqlite:///mlruns/mlflow.db
+      --default-artifact-root /mlruns/artifacts
+      --host 0.0.0.0
+      --port 5000
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./mlruns:/mlruns
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: railpulse-api
+    environment:
+      RAILPULSE_MLFLOW_URI: http://mlflow:5000
+      RAILPULSE_DATABASE_URL: postgresql://railpulse:railpulse_dev@pgvector:5432/railpulse_uk
+      RAILPULSE_DUCKDB_PATH: /app/data/processed/railpulse.duckdb
+      RAILPULSE_PNR_HMAC_KEY: ${RAILPULSE_PNR_HMAC_KEY:-railpulse-uk-gdpr-dev-secret}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - ./mlruns:/app/mlruns
+    depends_on:
+      pgvector:
+        condition: service_healthy
+      mlflow:
+        condition: service_started
+
+volumes:
+  pgvector_data:
