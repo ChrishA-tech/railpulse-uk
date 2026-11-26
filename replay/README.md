@@ -36,3 +36,7 @@ For cost replay, put the realised policy costs in baseline and candidate, and a 
 ```sh
 python replay/replay.py --input archive.csv --source "Archive name and holdout period" --output report.json
 ```
+
+## Historical York–Edinburgh backtest
+
+The [Darwin pilot](DARWIN_BACKTEST.md) compares the same two forecasting rules against recorded train arrivals. The interactive scenario replay uses simulated cases.

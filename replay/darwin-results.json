@@ -1,0 +1,79 @@
+{
+  "source": "National Rail Darwin Push Port observations via the iLoveTrains archive",
+  "route": "York to Edinburgh Waverley",
+  "departure_window_gmt": "09:00–12:59 scheduled departure",
+  "files": [
+    "2026-11-17-08.gz",
+    "2026-11-17-09.gz",
+    "2026-11-17-10.gz",
+    "2026-11-17-11.gz",
+    "2026-11-17-12.gz",
+    "2026-11-17-13.gz",
+    "2026-11-17-14.gz",
+    "2026-11-17-15.gz",
+    "2026-11-18-08.gz",
+    "2026-11-18-09.gz",
+    "2026-11-18-10.gz",
+    "2026-11-18-11.gz",
+    "2026-11-18-12.gz",
+    "2026-11-18-13.gz",
+    "2026-11-18-14.gz",
+    "2026-11-18-15.gz",
+    "2026-11-19-08.gz",
+    "2026-11-19-09.gz",
+    "2026-11-19-10.gz",
+    "2026-11-19-11.gz",
+    "2026-11-19-12.gz",
+    "2026-11-19-13.gz",
+    "2026-11-19-14.gz",
+    "2026-11-19-15.gz"
+  ],
+  "metrics": {
+    "services": 20,
+    "baseline_mae_minutes": 7.85,
+    "recovery_mae_minutes": 13.678,
+    "recovery_wins": 5,
+    "baseline_wins": 15,
+    "ties": 0,
+    "worst_recovery_gap_minutes": 22.4,
+    "worst_recovery_error_minutes": 38.8
+  },
+  "daily": {
+    "2026-11-17": {
+      "services": 6,
+      "baseline_mae_minutes": 9.833,
+      "recovery_mae_minutes": 13.047,
+      "recovery_wins": 1,
+      "baseline_wins": 5,
+      "ties": 0,
+      "worst_recovery_gap_minutes": 8.4,
+      "worst_recovery_error_minutes": 31.84
+    },
+    "2026-11-18": {
+      "services": 6,
+      "baseline_mae_minutes": 3.333,
+      "recovery_mae_minutes": 2.633,
+      "recovery_wins": 4,
+      "baseline_wins": 2,
+      "ties": 0,
+      "worst_recovery_gap_minutes": 1.68,
+      "worst_recovery_error_minutes": 4.88
+    },
+    "2026-11-19": {
+      "services": 8,
+      "baseline_mae_minutes": 9.75,
+      "recovery_mae_minutes": 22.435,
+      "recovery_wins": 0,
+      "baseline_wins": 8,
+      "ties": 0,
+      "worst_recovery_gap_minutes": 22.4,
+      "worst_recovery_error_minutes": 38.8
+    }
+  },
+  "exclusions": {
+    "no_edinburgh_update_in_archive": 174,
+    "no_destination_schedule_at_york": 31,
+    "outside_corridor_journey_window": 7,
+    "no_later_recorded_arrival": 3
+  }
+}
