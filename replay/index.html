@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>UK Decision Replay | Chrish Pep Felix A</title>
+<style>
+:root{color-scheme:light dark;font:16px/1.5 system-ui,sans-serif;--surface:#fff;--ink:#142239;--sub:#4f5f74;--bg:#eef3fa;--line:#d8e2ef;--blue:#075ec9;--candidate:#0669cc;--base:#77879c}
+@media(prefers-color-scheme:dark){:root{--surface:#152134;--ink:#f2f6ff;--sub:#b1c1d6;--bg:#0d1524;--line:#344761;--blue:#9bc7ff;--candidate:#69b4ff;--base:#a3b0c0}}
+*{box-sizing:border-box}body{margin:0;color:var(--ink);background:var(--bg)}main,nav{max-width:1152px;margin:auto;padding:0 26px}nav{display:flex;justify-content:space-between;align-items:center;gap:20px;padding-block:22px}a{color:var(--blue);text-underline-offset:4px}h1,h2,p{margin:0}h1{font-size:clamp(3.1rem,8vw,6.7rem);line-height:1;letter-spacing:-.075em;margin:.2em 0}h2{font-size:1.32rem;letter-spacing:-.02em}.lead{font-size:1.2rem;max-width:38rem;color:var(--sub)}.hero{padding:48px 0 35px;border-top:1px solid var(--line)}.domain{color:var(--blue);font-weight:700}.panel{padding:22px;background:var(--surface);border:1px solid var(--line);border-radius:24px;box-shadow:0 10px 30px #182a4510}.filters,.scores{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:16px}.scores strong{display:block;font-size:2.1rem;letter-spacing:-.04em}.muted,.panel p{color:var(--sub)}.panel p{margin-top:6px}label{display:grid;gap:5px;font-weight:650}select,button{width:100%;font:inherit;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);padding:10px 12px}button{width:auto;cursor:pointer}button:disabled{opacity:.5;cursor:default}button:hover:not(:disabled){border-color:var(--blue)}.chart{padding-bottom:14px}.chart canvas{width:100%;height:255px;display:block;margin-top:12px}.legend{display:flex;gap:18px;font-weight:650;flex-wrap:wrap}.legend span::before{content:'';display:inline-block;width:.8rem;height:.5rem;border-radius:4px;background:var(--base);margin-right:7px}.legend span+span::before{background:var(--candidate)}.details{margin:16px 0 44px}.details table{width:100%;border-collapse:collapse;text-align:left;margin-top:12px}td,th{padding:9px;border-bottom:1px solid var(--line)}.scroll{overflow:auto}.row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.scope{border-left:3px solid var(--blue);padding-left:12px;margin:14px 0}.state{margin-top:12px}.hidden{display:none}@media(max-width:670px){main,nav{padding-inline:16px}.filters{grid-template-columns:1fr}.scores{gap:6px}.scores .panel{padding:10px}.scores strong{font-size:1.5rem}.hero{padding-block:32px}.chart canvas{height:210px}}
+</style>
+</head>
+<body>
+<nav><a href="https://chrisha-tech.github.io/">Chrish Pep Felix A</a><a id="repo" href="https://github.com/ChrishA-tech">GitHub repository</a></nav>
+<main>
+<header class="hero"><p class="domain" id="domain">Interactive portfolio</p><h1 id="title">UK Decision Replay</h1><p id="subtitle" class="lead"></p></header>
+<p id="failure" role="alert" class="panel hidden"></p>
+<div id="interactive" class="hidden">
+<div class="filters panel">
+<label>Project<select id="project"></select></label>
+<label>Region or group<select id="group"></select></label>
+<label>Scenario<select id="scenario"></select></label>
+</div>
+<p id="scope" class="scope"></p>
+<section class="scores" aria-label="Results" aria-live="polite">
+<div class="panel"><span id="base-label"></span><strong id="baseline"></strong><span class="muted" id="units"></span></div>
+<div class="panel"><span id="candidate-label"></span><strong id="candidate"></strong><span class="muted">Lower is better</span></div>
+<div class="panel"><span>Candidate wins</span><strong id="wins"></strong><span class="muted" id="count"></span></div>
+</section>
+<section class="panel chart">
+<div class="row"><h2>Replay by case</h2><button id="download" type="button">Export visible cases</button></div>
+<canvas id="chart" role="img" aria-label="Baseline and candidate scores by replay case. Values are available in the table."></canvas>
+<div class="legend"><span id="base-legend"></span><span id="candidate-legend"></span></div>
+<p class="state" id="status" aria-live="polite"></p>
+</section>
+<section class="panel details">
+<h2>Where the candidate struggled</h2>
+<p id="analysis"></p>
+<div class="scroll"><table><thead><tr><th scope="col">Case</th><th scope="col">Group</th><th scope="col">Scenario</th><th scope="col">Baseline</th><th scope="col">Candidate</th></tr></thead><tbody id="cases"></tbody></table></div>
+</section>
+</div>
+<noscript><p class="panel">Enable JavaScript to explore the replay. The source and benchmark documentation are available on GitHub.</p></noscript>
+</main>
+<script id="data" type="application/json">[{"config": {"slug": "railpulse-uk", "name": "RailPulse UK", "domain": "Transport reliability", "subtitle": "Compare delay persistence with a schedule-recovery heuristic.", "units": "Minutes absolute error", "baseline": "Last delay", "candidate": "Recovery heuristic", "stress": "Disruption", "groups": ["West Coast", "East Coast", "TransPennine"], "note": "The replay stress-tests two heuristics on simulated corridors. No historical train movements are included. GAT performance and conformal calibration require a dated train-movement archive."}, "provenance": "Deterministic synthetic scenarios", "cases": [{"period": 1, "group": "West Coast", "scenario": "Typical", "baseline": 4.46978, "candidate": 0.55505}, {"period": 2, "group": "East Coast", "scenario": "Typical", "baseline": 2.38978, "candidate": 1.81446}, {"period": 3, "group": "TransPennine", "scenario": "Typical", "baseline": 0.37381, "candidate": 0.78403}, {"period": 4, "group": "West Coast", "scenario": "Disruption", "baseline": 0.76982, "candidate": 3.6961}, {"period": 5, "group": "East Coast", "scenario": "Disruption", "baseline": 3.64415, "candidate": 2.97714}, {"period": 6, "group": "TransPennine", "scenario": "Disruption", "baseline": 1.24932, "candidate": 0.93159}, {"period": 7, "group": "West Coast", "scenario": "Feed degraded", "baseline": 10.90846, "candidate": 10.90846}, {"period": 8, "group": "East Coast", "scenario": "Feed degraded", "baseline": 2.32595, "candidate": 2.32595}, {"period": 9, "group": "TransPennine", "scenario": "Feed degraded", "baseline": 0.21148, "candidate": 0.21148}, {"period": 10, "group": "West Coast", "scenario": "Typical", "baseline": 0.89714, "candidate": 1.18764}, {"period": 11, "group": "East Coast", "scenario": "Typical", "baseline": 5.58823, "candidate": 4.02352}, {"period": 12, "group": "TransPennine", "scenario": "Typical", "baseline": 9.27254, "candidate": 3.07517}, {"period": 13, "group": "West Coast", "scenario": "Disruption", "baseline": 2.44846, "candidate": 1.32842}, {"period": 14, "group": "East Coast", "scenario": "Disruption", "baseline": 1.88212, "candidate": 0.38151}, {"period": 15, "group": "TransPennine", "scenario": "Disruption", "baseline": 1.12733, "candidate": 0.3893}, {"period": 16, "group": "West Coast", "scenario": "Feed degraded", "baseline": 1.47498, "candidate": 1.47498}, {"period": 17, "group": "East Coast", "scenario": "Feed degraded", "baseline": 3.1538, "candidate": 3.1538}, {"period": 18, "group": "TransPennine", "scenario": "Feed degraded", "baseline": 7.52436, "candidate": 7.52436}, {"period": 19, "group": "West Coast", "scenario": "Typical", "baseline": 10.41926, "candidate": 4.81288}, {"period": 20, "group": "East Coast", "scenario": "Typical", "baseline": 0.54741, "candidate": 2.5115}, {"period": 21, "group": "TransPennine", "scenario": "Typical", "baseline": 5.79564, "candidate": 0.02266}, {"period": 22, "group": "West Coast", "scenario": "Disruption", "baseline": 8.64483, "candidate": 7.63695}, {"period": 23, "group": "East Coast", "scenario": "Disruption", "baseline": 0.79352, "candidate": 0.03068}, {"period": 24, "group": "TransPennine", "scenario": "Disruption", "baseline": 3.62854, "candidate": 0.88793}, {"period": 25, "group": "West Coast", "scenario": "Feed degraded", "baseline": 4.08119, "candidate": 4.08119}, {"period": 26, "group": "East Coast", "scenario": "Feed degraded", "baseline": 3.94359, "candidate": 3.94359}, {"period": 27, "group": "TransPennine", "scenario": "Feed degraded", "baseline": 1.25102, "candidate": 1.25102}, {"period": 28, "group": "West Coast", "scenario": "Typical", "baseline": 4.81176, "candidate": 3.46447}, {"period": 29, "group": "East Coast", "scenario": "Typical", "baseline": 0.00246, "candidate": 3.88712}, {"period": 30, "group": "TransPennine", "scenario": "Typical", "baseline": 3.13301, "candidate": 2.98341}, {"period": 31, "group": "West Coast", "scenario": "Disruption", "baseline": 0.49824, "candidate": 0.29802}, {"period": 32, "group": "East Coast", "scenario": "Disruption", "baseline": 3.22611, "candidate": 0.60518}, {"period": 33, "group": "TransPennine", "scenario": "Disruption", "baseline": 4.1249, "candidate": 2.30708}, {"period": 34, "group": "West Coast", "scenario": "Feed degraded", "baseline": 5.4749, "candidate": 5.4749}, {"period": 35, "group": "East Coast", "scenario": "Feed degraded", "baseline": 1.1597, "candidate": 1.1597}, {"period": 36, "group": "TransPennine", "scenario": "Feed degraded", "baseline": 7.79846, "candidate": 7.79846}, {"period": 37, "group": "West Coast", "scenario": "Typical", "baseline": 6.78401, "candidate": 0.832}, {"period": 38, "group": "East Coast", "scenario": "Typical", "baseline": 5.92083, "candidate": 2.45067}, {"period": 39, "group": "TransPennine", "scenario": "Typical", "baseline": 2.20082, "candidate": 0.82358}, {"period": 40, "group": "West Coast", "scenario": "Disruption", "baseline": 1.15093, "candidate": 1.16945}, {"period": 41, "group": "East Coast", "scenario": "Disruption", "baseline": 5.07261, "candidate": 4.83995}, {"period": 42, "group": "TransPennine", "scenario": "Disruption", "baseline": 1.09666, "candidate": 0.32799}, {"period": 43, "group": "West Coast", "scenario": "Feed degraded", "baseline": 7.98815, "candidate": 7.98815}, {"period": 44, "group": "East Coast", "scenario": "Feed degraded", "baseline": 3.56792, "candidate": 3.56792}, {"period": 45, "group": "TransPennine", "scenario": "Feed degraded", "baseline": 3.05119, "candidate": 3.05119}, {"period": 46, "group": "West Coast", "scenario": "Typical", "baseline": 2.24117, "candidate": 0.99616}, {"period": 47, "group": "East Coast", "scenario": "Typical", "baseline": 0.57657, "candidate": 0.6219}, {"period": 48, "group": "TransPennine", "scenario": "Typical", "baseline": 3.13601, "candidate": 1.11279}, {"period": 49, "group": "West Coast", "scenario": "Disruption", "baseline": 8.17083, "candidate": 5.19585}, {"period": 50, "group": "East Coast", "scenario": "Disruption", "baseline": 2.33332, "candidate": 1.54376}, {"period": 51, "group": "TransPennine", "scenario": "Disruption", "baseline": 7.05947, "candidate": 4.02694}, {"period": 52, "group": "West Coast", "scenario": "Feed degraded", "baseline": 7.27678, "candidate": 7.27678}, {"period": 53, "group": "East Coast", "scenario": "Feed degraded", "baseline": 7.15866, "candidate": 7.15866}, {"period": 54, "group": "TransPennine", "scenario": "Feed degraded", "baseline": 2.21957, "candidate": 2.21957}, {"period": 55, "group": "West Coast", "scenario": "Typical", "baseline": 8.47232, "candidate": 2.22379}, {"period": 56, "group": "East Coast", "scenario": "Typical", "baseline": 0.76854, "candidate": 0.88617}, {"period": 57, "group": "TransPennine", "scenario": "Typical", "baseline": 1.35349, "candidate": 2.8229}, {"period": 58, "group": "West Coast", "scenario": "Disruption", "baseline": 0.658, "candidate": 0.70155}, {"period": 59, "group": "East Coast", "scenario": "Disruption", "baseline": 3.81658, "candidate": 3.05744}, {"period": 60, "group": "TransPennine", "scenario": "Disruption", "baseline": 0.32754, "candidate": 0.6136}, {"period": 61, "group": "West Coast", "scenario": "Feed degraded", "baseline": 4.53782, "candidate": 4.53782}, {"period": 62, "group": "East Coast", "scenario": "Feed degraded", "baseline": 1.77002, "candidate": 1.77002}, {"period": 63, "group": "TransPennine", "scenario": "Feed degraded", "baseline": 1.7987, "candidate": 1.7987}, {"period": 64, "group": "West Coast", "scenario": "Typical", "baseline": 0.87384, "candidate": 2.93673}, {"period": 65, "group": "East Coast", "scenario": "Typical", "baseline": 2.55906, "candidate": 6.1959}, {"period": 66, "group": "TransPennine", "scenario": "Typical", "baseline": 4.57901, "candidate": 0.26253}, {"period": 67, "group": "West Coast", "scenario": "Disruption", "baseline": 4.66412, "candidate": 2.08436}, {"period": 68, "group": "East Coast", "scenario": "Disruption", "baseline": 7.94824, "candidate": 5.58759}, {"period": 69, "group": "TransPennine", "scenario": "Disruption", "baseline": 3.84447, "candidate": 4.79598}, {"period": 70, "group": "West Coast", "scenario": "Feed degraded", "baseline": 3.73179, "candidate": 3.73179}, {"period": 71, "group": "East Coast", "scenario": "Feed degraded", "baseline": 2.03724, "candidate": 2.03724}, {"period": 72, "group": "TransPennine", "scenario": "Feed degraded", "baseline": 12.7327, "candidate": 12.7327}, {"period": 73, "group": "West Coast", "scenario": "Typical", "baseline": 2.52184, "candidate": 1.3842}, {"period": 74, "group": "East Coast", "scenario": "Typical", "baseline": 4.87281, "candidate": 0.13463}, {"period": 75, "group": "TransPennine", "scenario": "Typical", "baseline": 1.50934, "candidate": 0.48363}, {"period": 76, "group": "West Coast", "scenario": "Disruption", "baseline": 4.92389, "candidate": 1.85121}, {"period": 77, "group": "East Coast", "scenario": "Disruption", "baseline": 3.84618, "candidate": 2.1502}, {"period": 78, "group": "TransPennine", "scenario": "Disruption", "baseline": 2.78155, "candidate": 4.21073}, {"period": 79, "group": "West Coast", "scenario": "Feed degraded", "baseline": 5.84655, "candidate": 5.84655}, {"period": 80, "group": "East Coast", "scenario": "Feed degraded", "baseline": 3.27899, "candidate": 3.27899}, {"period": 81, "group": "TransPennine", "scenario": "Feed degraded", "baseline": 6.82122, "candidate": 6.82122}, {"period": 82, "group": "West Coast", "scenario": "Typical", "baseline": 10.05176, "candidate": 5.9618}, {"period": 83, "group": "East Coast", "scenario": "Typical", "baseline": 1.40961, "candidate": 2.07835}, {"period": 84, "group": "TransPennine", "scenario": "Typical", "baseline": 5.49273, "candidate": 0.66276}], "baseline_mean": 3.8795416666666664, "candidate_mean": 2.9612391666666666}]</script>
+<script>
+'use strict';
+const el = id => document.getElementById(id);
+const number = new Intl.NumberFormat('en-GB',{maximumFractionDigits:3});
+const fmt = value => Number.isFinite(value) ? number.format(value) : '—';
+let catalogue, selected, cases=[];
+function options(target, entries) {
+  target.replaceChildren(...entries.map(([value,label]) => new Option(label,value)));
+}
+function plot() {
+  const canvas=el('chart'), ctx=canvas.getContext('2d');
+  if (!ctx) return;
+  const w=canvas.clientWidth,h=canvas.clientHeight, scale=window.devicePixelRatio || 1;
+  canvas.width=w*scale; canvas.height=h*scale; ctx.scale(scale,scale);
+  if (!cases.length || w<65) return;
+  const colors=getComputedStyle(document.documentElement);
+  const yValues=cases.flatMap(row=>[row.baseline,row.candidate]);
+  const min=Math.min(0,...yValues), max=Math.max(...yValues,min+.001);
+  const x=i=>44+(w-56)*(cases.length===1 ? .5 : i/(cases.length-1));
+  const y=v=>h-22-(h-38)*(v-min)/(max-min);
+  ctx.font='12px system-ui';
+  for(let i=0;i<=4;i++){
+    const v=min+(max-min)*i/4;
+    ctx.strokeStyle=colors.getPropertyValue('--line'); ctx.beginPath();ctx.moveTo(44,y(v));ctx.lineTo(w-12,y(v));ctx.stroke();
+    ctx.fillStyle=colors.getPropertyValue('--sub');ctx.fillText(fmt(v),0,y(v)+4);
+  }
+  for(const [key,variable] of [['baseline','--base'],['candidate','--candidate']]){
+    ctx.strokeStyle=ctx.fillStyle=colors.getPropertyValue(variable);ctx.lineWidth=2;
+    ctx.beginPath();cases.forEach((row,i)=>i?ctx.lineTo(x(i),y(row[key])):ctx.moveTo(x(i),y(row[key])));ctx.stroke();
+    if(cases.length===1){ctx.beginPath();ctx.arc(x(0),y(cases[0][key]),4,0,Math.PI*2);ctx.fill();}
+  }
+}
+function render() {
+  const group=el('group').value, scenario=el('scenario').value;
+  cases=selected.cases.filter(row=>(!group||row.group===group)&&(!scenario||row.scenario===scenario));
+  const mean=key=>cases.length?cases.reduce((sum,row)=>sum+row[key],0)/cases.length:NaN;
+  const wins=cases.filter(row=>row.candidate<row.baseline-1e-8).length;
+  const losses=cases.filter(row=>row.candidate>row.baseline+1e-8).sort((a,b)=>(b.candidate-b.baseline)-(a.candidate-a.baseline));
+  el('baseline').textContent=fmt(mean('baseline'));el('candidate').textContent=fmt(mean('candidate'));
+  el('wins').textContent=cases.length?Math.round(100*wins/cases.length)+'%':'—';
+  el('count').textContent=cases.length+' replay cases';
+  el('status').textContent=cases.length?selected.provenance:'No cases match these filters. Choose another group or scenario.';
+  const worst=losses[0];
+  el('analysis').textContent=worst?`The candidate scored worse in ${losses.length} of ${cases.length} cases. The largest gap was ${fmt(worst.candidate-worst.baseline)} in case ${worst.period} (${worst.scenario}, ${worst.group}).`:cases.length?'The candidate had no higher scores in this selection. Check other scenarios to see where it loses.':'Change the filters to inspect results.';
+  el('download').disabled = !cases.length;
+  el('cases').replaceChildren(...(losses.length?losses:cases).slice(0,5).map(row=>{
+    const tr=document.createElement('tr');
+    for(const value of [row.period,row.group,row.scenario,fmt(row.baseline),fmt(row.candidate)]) tr.insertCell().textContent=value;
+    return tr;
+  }));
+  plot();
+}
+function setProject() {
+  selected=catalogue.find(row=>row.config.slug===el('project').value) || catalogue[0];
+  const c=selected.config;
+  for(const [id,value] of Object.entries({title:c.name,domain:c.domain,subtitle:c.subtitle,scope:c.note,units:c.units,'base-label':c.baseline,'base-legend':c.baseline,'candidate-label':c.candidate,'candidate-legend':c.candidate})) el(id).textContent=value;
+  el('repo').href='https://github.com/ChrishA-tech/'+c.slug;
+  options(el('group'),[['','All groups'],...[...new Set(selected.cases.map(row=>row.group))].map(value=>[value,value])]);
+  options(el('scenario'),[['','All scenarios'],...[...new Set(selected.cases.map(row=>row.scenario))].map(value=>[value,value])]);
+  render();
+}
+try {
+  catalogue=JSON.parse(el('data').textContent);
+  if(!Array.isArray(catalogue)||!catalogue.length||catalogue.some(item=>!item.config||!Array.isArray(item.cases))) throw Error('Invalid replay data');
+  options(el('project'),catalogue.map(row=>[row.config.slug,row.config.name]));
+  const requested=new URLSearchParams(location.search).get('project');
+  if(catalogue.some(row=>row.config.slug===requested)) el('project').value=requested;
+  el('interactive').classList.remove('hidden');
+  setProject();
+  el('project').addEventListener('change',setProject);
+  ['group','scenario'].forEach(id=>el(id).addEventListener('change',render));
+  window.addEventListener('resize',plot);
+  el('download').addEventListener('click',()=>{
+    const quote=value=>'"'+String(value).replaceAll('"','""')+'"';
+    const lines=cases.map(row=>[row.period,row.group,row.scenario,row.baseline,row.candidate,selected.provenance].map(quote).join(','));
+    const url=URL.createObjectURL(new Blob(['case,group,scenario,baseline_score,candidate_score,provenance\n'+lines.join('\n')],{type:'text/csv'}));
+    const link=document.createElement('a');link.href=url;link.download=selected.config.slug+'-replay.csv';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  });
+} catch(error) {
+  el('interactive').classList.add('hidden');
+  el('failure').textContent='Replay data could not be loaded. Reload the page or check the repository for a fresh dashboard.';
+  el('failure').classList.remove('hidden');
+}
+</script>
+</body>
+</html>

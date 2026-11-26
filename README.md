@@ -62,3 +62,8 @@ See [docs/ERROR_ANALYSIS_REPORT.md](docs/ERROR_ANALYSIS_REPORT.md) for the slice
 docker compose up --build
 ```
 Services: `pgvector` (`5432`), `mlflow` (`5000`), and `api` (`8000`).
+
+
+## Interactive decision replay
+
+Explore [the dashboard](https://chrisha-tech.github.io/replay/?project=railpulse-uk) or reproduce the [scenario benchmark and error analysis](replay/README.md). The bundled replay uses synthetic scenarios.

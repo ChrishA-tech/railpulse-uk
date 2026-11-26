@@ -1,0 +1,16 @@
+{
+  "slug": "railpulse-uk",
+  "name": "RailPulse UK",
+  "domain": "Transport reliability",
+  "subtitle": "Compare delay persistence with a schedule-recovery heuristic.",
+  "units": "Minutes absolute error",
+  "baseline": "Last delay",
+  "candidate": "Recovery heuristic",
+  "stress": "Disruption",
+  "groups": [
+    "West Coast",
+    "East Coast",
+    "TransPennine"
+  ],
+  "note": "The replay stress-tests two heuristics on simulated corridors. No historical train movements are included. GAT performance and conformal calibration require a dated train-movement archive."
+}

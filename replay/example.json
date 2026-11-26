@@ -1,0 +1,611 @@
+{
+  "config": {
+    "slug": "railpulse-uk",
+    "name": "RailPulse UK",
+    "domain": "Transport reliability",
+    "subtitle": "Compare delay persistence with a schedule-recovery heuristic.",
+    "units": "Minutes absolute error",
+    "baseline": "Last delay",
+    "candidate": "Recovery heuristic",
+    "stress": "Disruption",
+    "groups": [
+      "West Coast",
+      "East Coast",
+      "TransPennine"
+    ],
+    "note": "The replay stress-tests two heuristics on simulated corridors. No historical train movements are included. GAT performance and conformal calibration require a dated train-movement archive."
+  },
+  "provenance": "Deterministic synthetic scenarios",
+  "cases": [
+    {
+      "period": 1,
+      "group": "West Coast",
+      "scenario": "Typical",
+      "baseline": 4.46978,
+      "candidate": 0.55505
+    },
+    {
+      "period": 2,
+      "group": "East Coast",
+      "scenario": "Typical",
+      "baseline": 2.38978,
+      "candidate": 1.81446
+    },
+    {
+      "period": 3,
+      "group": "TransPennine",
+      "scenario": "Typical",
+      "baseline": 0.37381,
+      "candidate": 0.78403
+    },
+    {
+      "period": 4,
+      "group": "West Coast",
+      "scenario": "Disruption",
+      "baseline": 0.76982,
+      "candidate": 3.6961
+    },
+    {
+      "period": 5,
+      "group": "East Coast",
+      "scenario": "Disruption",
+      "baseline": 3.64415,
+      "candidate": 2.97714
+    },
+    {
+      "period": 6,
+      "group": "TransPennine",
+      "scenario": "Disruption",
+      "baseline": 1.24932,
+      "candidate": 0.93159
+    },
+    {
+      "period": 7,
+      "group": "West Coast",
+      "scenario": "Feed degraded",
+      "baseline": 10.90846,
+      "candidate": 10.90846
+    },
+    {
+      "period": 8,
+      "group": "East Coast",
+      "scenario": "Feed degraded",
+      "baseline": 2.32595,
+      "candidate": 2.32595
+    },
+    {
+      "period": 9,
+      "group": "TransPennine",
+      "scenario": "Feed degraded",
+      "baseline": 0.21148,
+      "candidate": 0.21148
+    },
+    {
+      "period": 10,
+      "group": "West Coast",
+      "scenario": "Typical",
+      "baseline": 0.89714,
+      "candidate": 1.18764
+    },
+    {
+      "period": 11,
+      "group": "East Coast",
+      "scenario": "Typical",
+      "baseline": 5.58823,
+      "candidate": 4.02352
+    },
+    {
+      "period": 12,
+      "group": "TransPennine",
+      "scenario": "Typical",
+      "baseline": 9.27254,
+      "candidate": 3.07517
+    },
+    {
+      "period": 13,
+      "group": "West Coast",
+      "scenario": "Disruption",
+      "baseline": 2.44846,
+      "candidate": 1.32842
+    },
+    {
+      "period": 14,
+      "group": "East Coast",
+      "scenario": "Disruption",
+      "baseline": 1.88212,
+      "candidate": 0.38151
+    },
+    {
+      "period": 15,
+      "group": "TransPennine",
+      "scenario": "Disruption",
+      "baseline": 1.12733,
+      "candidate": 0.3893
+    },
+    {
+      "period": 16,
+      "group": "West Coast",
+      "scenario": "Feed degraded",
+      "baseline": 1.47498,
+      "candidate": 1.47498
+    },
+    {
+      "period": 17,
+      "group": "East Coast",
+      "scenario": "Feed degraded",
+      "baseline": 3.1538,
+      "candidate": 3.1538
+    },
+    {
+      "period": 18,
+      "group": "TransPennine",
+      "scenario": "Feed degraded",
+      "baseline": 7.52436,
+      "candidate": 7.52436
+    },
+    {
+      "period": 19,
+      "group": "West Coast",
+      "scenario": "Typical",
+      "baseline": 10.41926,
+      "candidate": 4.81288
+    },
+    {
+      "period": 20,
+      "group": "East Coast",
+      "scenario": "Typical",
+      "baseline": 0.54741,
+      "candidate": 2.5115
+    },
+    {
+      "period": 21,
+      "group": "TransPennine",
+      "scenario": "Typical",
+      "baseline": 5.79564,
+      "candidate": 0.02266
+    },
+    {
+      "period": 22,
+      "group": "West Coast",
+      "scenario": "Disruption",
+      "baseline": 8.64483,
+      "candidate": 7.63695
+    },
+    {
+      "period": 23,
+      "group": "East Coast",
+      "scenario": "Disruption",
+      "baseline": 0.79352,
+      "candidate": 0.03068
+    },
+    {
+      "period": 24,
+      "group": "TransPennine",
+      "scenario": "Disruption",
+      "baseline": 3.62854,
+      "candidate": 0.88793
+    },
+    {
+      "period": 25,
+      "group": "West Coast",
+      "scenario": "Feed degraded",
+      "baseline": 4.08119,
+      "candidate": 4.08119
+    },
+    {
+      "period": 26,
+      "group": "East Coast",
+      "scenario": "Feed degraded",
+      "baseline": 3.94359,
+      "candidate": 3.94359
+    },
+    {
+      "period": 27,
+      "group": "TransPennine",
+      "scenario": "Feed degraded",
+      "baseline": 1.25102,
+      "candidate": 1.25102
+    },
+    {
+      "period": 28,
+      "group": "West Coast",
+      "scenario": "Typical",
+      "baseline": 4.81176,
+      "candidate": 3.46447
+    },
+    {
+      "period": 29,
+      "group": "East Coast",
+      "scenario": "Typical",
+      "baseline": 0.00246,
+      "candidate": 3.88712
+    },
+    {
+      "period": 30,
+      "group": "TransPennine",
+      "scenario": "Typical",
+      "baseline": 3.13301,
+      "candidate": 2.98341
+    },
+    {
+      "period": 31,
+      "group": "West Coast",
+      "scenario": "Disruption",
+      "baseline": 0.49824,
+      "candidate": 0.29802
+    },
+    {
+      "period": 32,
+      "group": "East Coast",
+      "scenario": "Disruption",
+      "baseline": 3.22611,
+      "candidate": 0.60518
+    },
+    {
+      "period": 33,
+      "group": "TransPennine",
+      "scenario": "Disruption",
+      "baseline": 4.1249,
+      "candidate": 2.30708
+    },
+    {
+      "period": 34,
+      "group": "West Coast",
+      "scenario": "Feed degraded",
+      "baseline": 5.4749,
+      "candidate": 5.4749
+    },
+    {
+      "period": 35,
+      "group": "East Coast",
+      "scenario": "Feed degraded",
+      "baseline": 1.1597,
+      "candidate": 1.1597
+    },
+    {
+      "period": 36,
+      "group": "TransPennine",
+      "scenario": "Feed degraded",
+      "baseline": 7.79846,
+      "candidate": 7.79846
+    },
+    {
+      "period": 37,
+      "group": "West Coast",
+      "scenario": "Typical",
+      "baseline": 6.78401,
+      "candidate": 0.832
+    },
+    {
+      "period": 38,
+      "group": "East Coast",
+      "scenario": "Typical",
+      "baseline": 5.92083,
+      "candidate": 2.45067
+    },
+    {
+      "period": 39,
+      "group": "TransPennine",
+      "scenario": "Typical",
+      "baseline": 2.20082,
+      "candidate": 0.82358
+    },
+    {
+      "period": 40,
+      "group": "West Coast",
+      "scenario": "Disruption",
+      "baseline": 1.15093,
+      "candidate": 1.16945
+    },
+    {
+      "period": 41,
+      "group": "East Coast",
+      "scenario": "Disruption",
+      "baseline": 5.07261,
+      "candidate": 4.83995
+    },
+    {
+      "period": 42,
+      "group": "TransPennine",
+      "scenario": "Disruption",
+      "baseline": 1.09666,
+      "candidate": 0.32799
+    },
+    {
+      "period": 43,
+      "group": "West Coast",
+      "scenario": "Feed degraded",
+      "baseline": 7.98815,
+      "candidate": 7.98815
+    },
+    {
+      "period": 44,
+      "group": "East Coast",
+      "scenario": "Feed degraded",
+      "baseline": 3.56792,
+      "candidate": 3.56792
+    },
+    {
+      "period": 45,
+      "group": "TransPennine",
+      "scenario": "Feed degraded",
+      "baseline": 3.05119,
+      "candidate": 3.05119
+    },
+    {
+      "period": 46,
+      "group": "West Coast",
+      "scenario": "Typical",
+      "baseline": 2.24117,
+      "candidate": 0.99616
+    },
+    {
+      "period": 47,
+      "group": "East Coast",
+      "scenario": "Typical",
+      "baseline": 0.57657,
+      "candidate": 0.6219
+    },
+    {
+      "period": 48,
+      "group": "TransPennine",
+      "scenario": "Typical",
+      "baseline": 3.13601,
+      "candidate": 1.11279
+    },
+    {
+      "period": 49,
+      "group": "West Coast",
+      "scenario": "Disruption",
+      "baseline": 8.17083,
+      "candidate": 5.19585
+    },
+    {
+      "period": 50,
+      "group": "East Coast",
+      "scenario": "Disruption",
+      "baseline": 2.33332,
+      "candidate": 1.54376
+    },
+    {
+      "period": 51,
+      "group": "TransPennine",
+      "scenario": "Disruption",
+      "baseline": 7.05947,
+      "candidate": 4.02694
+    },
+    {
+      "period": 52,
+      "group": "West Coast",
+      "scenario": "Feed degraded",
+      "baseline": 7.27678,
+      "candidate": 7.27678
+    },
+    {
+      "period": 53,
+      "group": "East Coast",
+      "scenario": "Feed degraded",
+      "baseline": 7.15866,
+      "candidate": 7.15866
+    },
+    {
+      "period": 54,
+      "group": "TransPennine",
+      "scenario": "Feed degraded",
+      "baseline": 2.21957,
+      "candidate": 2.21957
+    },
+    {
+      "period": 55,
+      "group": "West Coast",
+      "scenario": "Typical",
+      "baseline": 8.47232,
+      "candidate": 2.22379
+    },
+    {
+      "period": 56,
+      "group": "East Coast",
+      "scenario": "Typical",
+      "baseline": 0.76854,
+      "candidate": 0.88617
+    },
+    {
+      "period": 57,
+      "group": "TransPennine",
+      "scenario": "Typical",
+      "baseline": 1.35349,
+      "candidate": 2.8229
+    },
+    {
+      "period": 58,
+      "group": "West Coast",
+      "scenario": "Disruption",
+      "baseline": 0.658,
+      "candidate": 0.70155
+    },
+    {
+      "period": 59,
+      "group": "East Coast",
+      "scenario": "Disruption",
+      "baseline": 3.81658,
+      "candidate": 3.05744
+    },
+    {
+      "period": 60,
+      "group": "TransPennine",
+      "scenario": "Disruption",
+      "baseline": 0.32754,
+      "candidate": 0.6136
+    },
+    {
+      "period": 61,
+      "group": "West Coast",
+      "scenario": "Feed degraded",
+      "baseline": 4.53782,
+      "candidate": 4.53782
+    },
+    {
+      "period": 62,
+      "group": "East Coast",
+      "scenario": "Feed degraded",
+      "baseline": 1.77002,
+      "candidate": 1.77002
+    },
+    {
+      "period": 63,
+      "group": "TransPennine",
+      "scenario": "Feed degraded",
+      "baseline": 1.7987,
+      "candidate": 1.7987
+    },
+    {
+      "period": 64,
+      "group": "West Coast",
+      "scenario": "Typical",
+      "baseline": 0.87384,
+      "candidate": 2.93673
+    },
+    {
+      "period": 65,
+      "group": "East Coast",
+      "scenario": "Typical",
+      "baseline": 2.55906,
+      "candidate": 6.1959
+    },
+    {
+      "period": 66,
+      "group": "TransPennine",
+      "scenario": "Typical",
+      "baseline": 4.57901,
+      "candidate": 0.26253
+    },
+    {
+      "period": 67,
+      "group": "West Coast",
+      "scenario": "Disruption",
+      "baseline": 4.66412,
+      "candidate": 2.08436
+    },
+    {
+      "period": 68,
+      "group": "East Coast",
+      "scenario": "Disruption",
+      "baseline": 7.94824,
+      "candidate": 5.58759
+    },
+    {
+      "period": 69,
+      "group": "TransPennine",
+      "scenario": "Disruption",
+      "baseline": 3.84447,
+      "candidate": 4.79598
+    },
+    {
+      "period": 70,
+      "group": "West Coast",
+      "scenario": "Feed degraded",
+      "baseline": 3.73179,
+      "candidate": 3.73179
+    },
+    {
+      "period": 71,
+      "group": "East Coast",
+      "scenario": "Feed degraded",
+      "baseline": 2.03724,
+      "candidate": 2.03724
+    },
+    {
+      "period": 72,
+      "group": "TransPennine",
+      "scenario": "Feed degraded",
+      "baseline": 12.7327,
+      "candidate": 12.7327
+    },
+    {
+      "period": 73,
+      "group": "West Coast",
+      "scenario": "Typical",
+      "baseline": 2.52184,
+      "candidate": 1.3842
+    },
+    {
+      "period": 74,
+      "group": "East Coast",
+      "scenario": "Typical",
+      "baseline": 4.87281,
+      "candidate": 0.13463
+    },
+    {
+      "period": 75,
+      "group": "TransPennine",
+      "scenario": "Typical",
+      "baseline": 1.50934,
+      "candidate": 0.48363
+    },
+    {
+      "period": 76,
+      "group": "West Coast",
+      "scenario": "Disruption",
+      "baseline": 4.92389,
+      "candidate": 1.85121
+    },
+    {
+      "period": 77,
+      "group": "East Coast",
+      "scenario": "Disruption",
+      "baseline": 3.84618,
+      "candidate": 2.1502
+    },
+    {
+      "period": 78,
+      "group": "TransPennine",
+      "scenario": "Disruption",
+      "baseline": 2.78155,
+      "candidate": 4.21073
+    },
+    {
+      "period": 79,
+      "group": "West Coast",
+      "scenario": "Feed degraded",
+      "baseline": 5.84655,
+      "candidate": 5.84655
+    },
+    {
+      "period": 80,
+      "group": "East Coast",
+      "scenario": "Feed degraded",
+      "baseline": 3.27899,
+      "candidate": 3.27899
+    },
+    {
+      "period": 81,
+      "group": "TransPennine",
+      "scenario": "Feed degraded",
+      "baseline": 6.82122,
+      "candidate": 6.82122
+    },
+    {
+      "period": 82,
+      "group": "West Coast",
+      "scenario": "Typical",
+      "baseline": 10.05176,
+      "candidate": 5.9618
+    },
+    {
+      "period": 83,
+      "group": "East Coast",
+      "scenario": "Typical",
+      "baseline": 1.40961,
+      "candidate": 2.07835
+    },
+    {
+      "period": 84,
+      "group": "TransPennine",
+      "scenario": "Typical",
+      "baseline": 5.49273,
+      "candidate": 0.66276
+    }
+  ],
+  "baseline_mean": 3.8795416666666664,
+  "candidate_mean": 2.9612391666666666
+}
